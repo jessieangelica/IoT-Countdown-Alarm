@@ -1,0 +1,80 @@
+//7-segment truth table stored as 8-bit binary to avoid having 2 dimensional array
+byte numbers[11] = {0b11111100, // display 0
+                    0b01100000, // display 1
+                    0b11011010, // display 2
+                    0b11110010, // display 3
+                    0b01100110, // display 4
+                    0b10110110, // display 5
+                    0b10111110, // display 6
+                    0b11100000, // display 7
+                    0b11111110, // display 8
+                    0b11110110, // display 9
+                    0b00000000}; //last part clear the display
+
+
+int pinout[7] = {5, 6, 7, 8, 9, 4, 3};  // pinout to arduino (A-G)
+int direction;
+int position;
+
+
+// simple helper function to display the number
+void printNumber(int num){
+  for(int j=0;j<7;j++){
+    //bitread function handles interpreting bit to numbers
+    //bitRead function get the least significant bit of a binary (last to first)
+    //decreased by 7 to get first to last bit since the pinout goes from A-G
+    digitalWrite(pinout[j], bitRead(numbers[num], 7 - j));
+  }
+}
+
+
+// function that handles alert (objective 3)
+void alert(){
+  // our take on the task, loop from 0 to 6 then print a number on every even number
+  for(int i=1;i<=6;i++){
+    if(i%2==0){ // for even it will display the 'position' and alerting
+      printNumber(position);
+      tone(12, 440);
+    }else{      // else, for odd it will display the 10th numbers array which will clear the display
+      printNumber(10);
+      noTone(12);
+    }
+    delay(1000);
+  }
+  noTone(12);
+}
+
+
+void setup() // initializing variables and pin modes
+{
+  position = 0;
+  direction = 1;
+ 
+  for (int i = 0; i < 7; i++) {
+   pinMode(pinout[i], OUTPUT); // initialize pin mode for seven segment
+ }
+  pinMode(12, OUTPUT); // initialize pin mode for piezo
+}
+
+
+
+
+// loop()
+// this function works as a while loop
+// by putting the variables outside the loop the program will be able to achieve the desired "ping-pong" effect
+// print the number based on position
+// check for loop direction (increment or decrement position based on the current loop state)
+// show alert on state end (number 0 or 9) then change direction
+
+
+void loop(){
+ 
+  printNumber(position);
+  delay(1000);
+  //It's a lambda function (used just once) consist of ternary operator (the ? and : which expression whose value is used as a condition)
+  (direction == 1) ? (void) position++ : (void) position--;
+  if (position <= 0 || position >= 9){
+    alert();
+    direction = direction * -1;
+  }
+}
